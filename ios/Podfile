@@ -1,0 +1,87 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '15.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks! :linkage => :static
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      # Убеждаемся, что модули правильно настроены
+      config.build_settings['DEFINES_MODULE'] = 'YES'
+      config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      # Разрешаем не-модульные импорты в фреймворках
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+      # Важно: настройки для правильной работы модулей
+      config.build_settings['CLANG_MODULES_AUTOLINK'] = 'YES'
+      # Для статических фреймворков важно правильно настроить пути поиска модулей
+      config.build_settings['SWIFT_INCLUDE_PATHS'] = '$(inherited) $(PODS_CONFIGURATION_BUILD_DIR)'
+      # Убеждаемся, что модули доступны для Swift
+      if config.build_settings['MODULEMAP_FILE']
+        config.build_settings['MODULEMAP_FILE'] = config.build_settings['MODULEMAP_FILE']
+      end
+    end
+  end
+  
+  # Настройки для основного проекта Runner
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+    config.build_settings['DEFINES_MODULE'] = 'YES'
+  end
+  
+  # Исправляем GeneratedPluginRegistrant.m для appmetrica_plugin после генерации
+  # Это нужно делать после flutter pub get, поэтому создаем скрипт
+  fix_script = <<-SCRIPT
+    #!/bin/bash
+    GENERATED_FILE="#{File.join(File.dirname(__FILE__), 'Runner', 'GeneratedPluginRegistrant.m')}"
+    if [ -f "$GENERATED_FILE" ]; then
+      sed -i '' 's/@import appmetrica_plugin;/#import <appmetrica_plugin\/AMAFAppMetricaPlugin.h>/g' "$GENERATED_FILE"
+      sed -i '' '/#if __has_include(<appmetrica_plugin\/AMAFAppMetricaPlugin.h>)/,/^#endif$/d' "$GENERATED_FILE" || true
+      # Добавляем прямой импорт если его нет
+      if ! grep -q "#import <appmetrica_plugin/AMAFAppMetricaPlugin.h>" "$GENERATED_FILE"; then
+        sed -i '' '/#import "GeneratedPluginRegistrant.h"/a\
+#import <appmetrica_plugin/AMAFAppMetricaPlugin.h>
+' "$GENERATED_FILE"
+      fi
+    fi
+  SCRIPT
+  # Сохраняем скрипт для последующего использования
+  script_file = File.join(File.dirname(__FILE__), 'fix_appmetrica_import.sh')
+  File.write(script_file, fix_script)
+  File.chmod(0755, script_file)
+end

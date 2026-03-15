@@ -10,6 +10,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/providers/core_providers.dart';
 import 'core/storage/local_db.dart';
 import 'shared/router/app_router.dart';
+import 'firebase_options.dart';
 
 final FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.instance;
 
@@ -25,6 +26,11 @@ final AppsflyerSdk appsflyerSdk = AppsflyerSdk(_appsFlyerOptions);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Firebase initialization
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // AppMetrica
   const appMetricaConfig = AppMetricaConfig(
