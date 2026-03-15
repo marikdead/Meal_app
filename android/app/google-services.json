@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "983725256877",
+    "project_id": "aimeal-710e7",
+    "storage_bucket": "aimeal-710e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:983725256877:android:46ff9fab3e2621ab1d5624",
+        "android_client_info": {
+          "package_name": "com.example.ai_meal_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcu8LJrOE_YcwDSg2gl-tgGpQ9bHEd0Yw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

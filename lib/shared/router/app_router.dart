@@ -4,6 +4,7 @@ import '../../features/grocery_list/presentation/screens/grocery_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/meal_plan/presentation/screens/meal_plan_screen.dart';
 import '../../features/recipe_generator/presentation/screens/recipe_screen.dart';
+import '../../main_shell.dart';
 
 final class AppRoutes {
   static const home = '/';
@@ -14,10 +15,10 @@ final class AppRoutes {
 
 final class AppRouter {
   static final routes = <String, WidgetBuilder>{
-    AppRoutes.home: (_) => const HomeScreen(),
+    // Домашний маршрут ведёт в оболочку с нижней навигацией и рекламой.
+    AppRoutes.home: (_) => const MainShell(),
     AppRoutes.mealPlan: (_) => const MealPlanScreen(),
     AppRoutes.recipes: (_) => const RecipeScreen(),
     AppRoutes.grocery: (_) => const GroceryScreen(),
   };
 }
-
