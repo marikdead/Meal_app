@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'core/att/att_service.dart';
 import 'shared/widgets/ads_widgets.dart';
 import 'features/grocery_list/presentation/screens/grocery_screen.dart';
 import 'features/meal_plan/presentation/screens/meal_plan_screen.dart';
@@ -15,6 +15,15 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // После первого кадра запрашиваем ATT через Flutter-сервис.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AttService.requestIfNeeded(context);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
